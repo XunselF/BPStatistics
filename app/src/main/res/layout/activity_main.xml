@@ -7,6 +7,16 @@
     android:layout_height="match_parent"
     tools:context="me.xunself.bpstatistics.MainActivity">
 
+    <!--标题栏-->
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/main_toolBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="@string/app_name"
+        android:background="@color/colorPrimary"
+        app:titleTextColor="@android:color/white"></android.support.v7.widget.Toolbar>
+
     <!--主页面-->
 
     <FrameLayout
@@ -38,6 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center">
                 <ImageView
+                    android:id="@+id/customer_iamge"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:src="@drawable/ic_accessibility_amber_600_24dp"
@@ -65,6 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center">
                 <ImageView
+                    android:id="@+id/management_image"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:src="@drawable/ic_account_balance_wallet_amber_600_24dp"

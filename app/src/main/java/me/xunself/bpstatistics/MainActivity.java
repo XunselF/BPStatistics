@@ -4,13 +4,19 @@ package me.xunself.bpstatistics;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private FrameLayout mainFrameLayout;
+    private Toolbar mainToolBar;
+
+    private ImageView customerImage;
+    private ImageView managementImage;
     private LinearLayout customerButtonLayout;
     private LinearLayout managementButtonLayout;
 
@@ -35,13 +41,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化
      */
     private void init(){
-        mainFrameLayout = (FrameLayout) findViewById(R.id.main_frameLayout);
+        mainToolBar = (Toolbar) findViewById(R.id.main_toolBar);
+        setSupportActionBar(mainToolBar);
+        customerImage = (ImageView) findViewById(R.id.customer_iamge);
+        managementImage = (ImageView) findViewById(R.id.management_image);
         customerButtonLayout = (LinearLayout) findViewById(R.id.customer_layout);
         managementButtonLayout = (LinearLayout) findViewById(R.id.management_layout);
         customerButtonLayout.setOnClickListener(this);
         managementButtonLayout.setOnClickListener(this);
         displayFragment(DISPLAY_CUSTOMER_FRAGMENT);
     }
+
+
 
     @Override
     public void onClick(View view) {
@@ -80,6 +91,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
              */
             fragmentTransaction.show(customerFragment);
             fragmentTransaction.hide(managementFragment);
+            customerImage.setImageResource(R.drawable.ic_accessibility_amber_600_24dp);
+            managementImage.setImageResource(R.drawable.ic_account_balance_wallet_black_24dp);
+
 
         }else if (Tag == DISPLAY_MANAGEMENT_FRAGMENT){
             /**
@@ -87,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
              */
             fragmentTransaction.show(managementFragment);
             fragmentTransaction.hide(customerFragment);
+
+            customerImage.setImageResource(R.drawable.ic_accessibility_black_24dp);
+            managementImage.setImageResource(R.drawable.ic_account_balance_wallet_amber_600_24dp);
         }
 
         fragmentTransaction.commit();
