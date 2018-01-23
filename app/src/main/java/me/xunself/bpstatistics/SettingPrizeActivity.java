@@ -1,5 +1,7 @@
 package me.xunself.bpstatistics;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,7 +12,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.litepal.crud.DataSupport;
 
@@ -19,7 +24,7 @@ import java.util.List;
 
 public class SettingPrizeActivity extends AppCompatActivity {
 
-    private List<Prize> prizeList;
+    private List<Price> priceList;
     private Toolbar toolbar;
 
     private RecyclerView prizeRecyclerView;
@@ -35,7 +40,7 @@ public class SettingPrizeActivity extends AppCompatActivity {
      * 获取数据
      */
     private void getPrizes(){
-        prizeList = DataSupport.findAll(Prize.class);
+        priceList = DataSupport.findAll(Price.class);
     }
 
     @Override
@@ -48,6 +53,7 @@ public class SettingPrizeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_add:
+                showDialog();
                 break;
         }
         return true;
@@ -57,7 +63,32 @@ public class SettingPrizeActivity extends AppCompatActivity {
      * 弹窗
      */
     private void showDialog(){
-        
+        View view = (LinearLayout) getLayoutInflater().inflate(R.layout.alertdialog_price,null);
+        final EditText et = (EditText) view.findViewById(R.id.input_price);
+
+        new AlertDialog.Builder(this).setTitle("价格类型")
+                .setView(view)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String input = et.getText().toString();
+                        if (input.equals("")){
+                            Toast.makeText(SettingPrizeActivity.this,"输入不能为空！",Toast.LENGTH_SHORT).show();
+                        }else{
+                            for (int j = 0; j < priceList.size(); j++){
+                                if (input.equals(priceList.get(j).getPriceName())){
+                                    Toast.makeText(SettingPrizeActivity.this,"您已添加该价格类型！",Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                            }
+                            Price price = new Price(input);
+                            price.save();
+                            Toast.makeText(SettingPrizeActivity.this,"保存成功！",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("取消",null)
+                .show();
     }
 
     /**
@@ -96,13 +127,13 @@ public class SettingPrizeActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            Prize prize = prizeList.get(position);
-            holder.prizeNameText.setText(prize.getPrizeName());
+            Price prize = priceList.get(position);
+            holder.prizeNameText.setText(prize.getPriceName());
         }
 
         @Override
         public int getItemCount() {
-            return prizeList.size();
+            return priceList.size();
         }
     }
 }

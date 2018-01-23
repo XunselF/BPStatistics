@@ -32,8 +32,8 @@
     	</list>
     -->
     <list>
-        <mapping class="me.xunself.bpstatistics.Prize" />
-        <mapping class="me.xunself.bpstatistics.BoxPrize" />
+        <mapping class="me.xunself.bpstatistics.Price" />
+        <mapping class="me.xunself.bpstatistics.BoxPrice" />
         <mapping class="me.xunself.bpstatistics.Box" />
     </list>
 

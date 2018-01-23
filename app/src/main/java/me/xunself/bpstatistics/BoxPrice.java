@@ -8,17 +8,17 @@ import java.util.Date;
  * Created by XunselF on 2018/1/23.
  */
 
-public class BoxPrize extends DataSupport{
+public class BoxPrice extends DataSupport{
     private String bName;
     private String pName;
-    private double bPrize;
+    private double bPrice;
     private Date bDate;
 
-    public BoxPrize(String bName,String pName,double bPrize,Date bDate){
+    public BoxPrice(String bName,String pName,double bPrize,Date bDate){
         this.bDate = bDate;
         this.bName = bName;
         this.pName = pName;
-        this.bPrize = bPrize;
+        this.bPrice = bPrize;
     }
 
     public String getbName() {
@@ -29,8 +29,8 @@ public class BoxPrize extends DataSupport{
         return bDate;
     }
 
-    public double getbPrize() {
-        return bPrize;
+    public double getbPrice() {
+        return bPrice;
     }
 
     public String getpName() {

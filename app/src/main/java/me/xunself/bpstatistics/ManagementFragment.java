@@ -32,7 +32,7 @@ public class ManagementFragment extends Fragment {
     private BoxAdapter boxAdapter;
 
     private List<Box> boxList;
-    private List<BoxPrize> boxPrizeList;
+    private List<BoxPrice> boxPriceList;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -68,10 +68,10 @@ public class ManagementFragment extends Fragment {
      * 获取数据
      */
     private void getBoxPrizeList(){
-        boxPrizeList = new ArrayList<>();
+        boxPriceList = new ArrayList<>();
         for (int i = 0; i < 4; i ++){
-            BoxPrize boxPrize = new BoxPrize("box","A",1.2,new Date());
-            boxPrizeList.add(boxPrize);
+            BoxPrice boxPrice = new BoxPrice("box","A",1.2,new Date());
+            boxPriceList.add(boxPrice);
         }
     }
 
@@ -154,12 +154,12 @@ public class ManagementFragment extends Fragment {
 
     class BoxPrizeAdapter extends RecyclerView.Adapter<BoxPrizeAdapter.ViewHolder>{
         class ViewHolder extends RecyclerView.ViewHolder{
-            TextView boxPrizeText;
+            TextView boxPriceText;
             TextView bPNameText;
             public ViewHolder(View itemView) {
                 super(itemView);
-                boxPrizeText = (TextView) itemView.findViewById(R.id.box_prize);
-                bPNameText = (TextView) itemView.findViewById(R.id.box_prize_name);
+                boxPriceText = (TextView) itemView.findViewById(R.id.box_price);
+                bPNameText = (TextView) itemView.findViewById(R.id.box_price_name);
             }
         }
 
@@ -172,14 +172,14 @@ public class ManagementFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            BoxPrize boxPrize = boxPrizeList.get(position);
-            holder.bPNameText.setText(boxPrize.getpName());
-            holder.boxPrizeText.setText(boxPrize.getbPrize() + "");
+            BoxPrice boxPrice = boxPriceList.get(position);
+            holder.bPNameText.setText(boxPrice.getpName());
+            holder.boxPriceText.setText(boxPrice.getbPrice() + "");
         }
 
         @Override
         public int getItemCount() {
-            return boxPrizeList.size();
+            return boxPriceList.size();
         }
     }
 }

@@ -71,10 +71,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化数据库
      */
     private void initPrizeDatabase(){
-        String[] prizes = {"A","B","C"};
-        for (int i = 0; i < prizes.length; i++ ){
-            Prize prize = new Prize(prizes[i]);
-            prize.save();
+        String[] prices = {"A","B","C"};
+        for (int i = 0; i < prices.length; i++ ){
+            Price price = new Price(prices[i]);
+            price.save();
         }
     }
 
