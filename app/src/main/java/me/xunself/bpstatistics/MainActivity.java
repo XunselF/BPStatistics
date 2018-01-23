@@ -1,6 +1,8 @@
 package me.xunself.bpstatistics;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,6 +12,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import org.litepal.LitePal;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -30,10 +34,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int DISPLAY_CUSTOMER_FRAGMENT = 1;
     private int DISPLAY_MANAGEMENT_FRAGMENT = 2;
 
+    SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        LitePal.initialize(this);
+        //数据库初始化
         init();
     }
 
@@ -41,6 +49,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化
      */
     private void init(){
+        sharedPreferences = getSharedPreferences("BPS_data", Context.MODE_PRIVATE);
+        if (!sharedPreferences.getBoolean("ifInit",false)){
+            initPrizeDatabase();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("ifInit",true);
+            editor.commit();
+        }
         mainToolBar = (Toolbar) findViewById(R.id.main_toolBar);
         setSupportActionBar(mainToolBar);
         customerImage = (ImageView) findViewById(R.id.customer_iamge);
@@ -50,6 +65,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         customerButtonLayout.setOnClickListener(this);
         managementButtonLayout.setOnClickListener(this);
         displayFragment(DISPLAY_CUSTOMER_FRAGMENT);
+    }
+
+    /**
+     * 初始化数据库
+     */
+    private void initPrizeDatabase(){
+        String[] prizes = {"A","B","C"};
+        for (int i = 0; i < prizes.length; i++ ){
+            Prize prize = new Prize(prizes[i]);
+            prize.save();
+        }
     }
 
 

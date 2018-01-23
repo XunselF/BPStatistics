@@ -1,10 +1,13 @@
 package me.xunself.bpstatistics;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +32,7 @@ public class ManagementFragment extends Fragment {
     private BoxAdapter boxAdapter;
 
     private List<Box> boxList;
+    private List<BoxPrize> boxPrizeList;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -54,8 +58,20 @@ public class ManagementFragment extends Fragment {
      */
     private void getBoxList(){
         for (int i = 0; i < 20; i ++){
-            Box box = new Box("test","",new Date());
+            Box box = new Box("test","123",new Date());
             boxList.add(box);
+        }
+        getBoxPrizeList();
+    }
+
+    /**
+     * 获取数据
+     */
+    private void getBoxPrizeList(){
+        boxPrizeList = new ArrayList<>();
+        for (int i = 0; i < 4; i ++){
+            BoxPrize boxPrize = new BoxPrize("box","A",1.2,new Date());
+            boxPrizeList.add(boxPrize);
         }
     }
 
@@ -80,6 +96,10 @@ public class ManagementFragment extends Fragment {
             case R.id.action_add:
                 Toast.makeText(getActivity(),"test",Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.action_setting:
+                Intent intent = new Intent(getActivity(),SettingPrizeActivity.class);
+                startActivity(intent);
+                break;
             default:
                 break;
         }
@@ -89,10 +109,16 @@ public class ManagementFragment extends Fragment {
     class BoxAdapter extends RecyclerView.Adapter<BoxAdapter.ViewHolder>{
 
         class ViewHolder extends RecyclerView.ViewHolder{
+            CardView boxitemLayout;
             TextView boxNameText;
+            TextView boxContentText;
+            RecyclerView boxPrizeRecyclerView;
             public ViewHolder(View itemView) {
                 super(itemView);
+                boxitemLayout = (CardView) itemView.findViewById(R.id.box_item_layout);
                 boxNameText = (TextView) itemView.findViewById(R.id.box_name);
+                boxContentText = (TextView) itemView.findViewById(R.id.box_content);
+                boxPrizeRecyclerView = (RecyclerView) itemView.findViewById(R.id.box_prize_recyclerview);
             }
         }
 
@@ -106,12 +132,54 @@ public class ManagementFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             Box box = boxList.get(position);
+            holder.boxitemLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(getActivity(),"test",Toast.LENGTH_SHORT).show();
+                }
+            });
             holder.boxNameText.setText(box.getbName());
+            holder.boxContentText.setText(box.getbContent());
+            BoxPrizeAdapter boxPrizeAdapter = new BoxPrizeAdapter();
+            StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
+            holder.boxPrizeRecyclerView.setLayoutManager(staggeredGridLayoutManager);
+            holder.boxPrizeRecyclerView.setAdapter(boxPrizeAdapter);
         }
 
         @Override
         public int getItemCount() {
             return boxList.size();
+        }
+    }
+
+    class BoxPrizeAdapter extends RecyclerView.Adapter<BoxPrizeAdapter.ViewHolder>{
+        class ViewHolder extends RecyclerView.ViewHolder{
+            TextView boxPrizeText;
+            TextView bPNameText;
+            public ViewHolder(View itemView) {
+                super(itemView);
+                boxPrizeText = (TextView) itemView.findViewById(R.id.box_prize);
+                bPNameText = (TextView) itemView.findViewById(R.id.box_prize_name);
+            }
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(getActivity()).inflate(R.layout.boxprize_item,parent,false);
+            ViewHolder holder = new ViewHolder(view);
+            return holder;
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            BoxPrize boxPrize = boxPrizeList.get(position);
+            holder.bPNameText.setText(boxPrize.getpName());
+            holder.boxPrizeText.setText(boxPrize.getbPrize() + "");
+        }
+
+        @Override
+        public int getItemCount() {
+            return boxPrizeList.size();
         }
     }
 }
