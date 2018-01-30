@@ -4,8 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="me.xunself.bpstatistics.SettingPrizeActivity">
+    android:layout_height="match_parent">
     <android.support.v7.widget.Toolbar
         android:id="@+id/setting_toolbar"
         app:title="设置价格"
@@ -15,8 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"></android.support.v7.widget.Toolbar>
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/prize_recyclerview"
+        android:id="@+id/price_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#e1e1e1"></android.support.v7.widget.RecyclerView>
+        android:background="@color/gray_color"></android.support.v7.widget.RecyclerView>
 </LinearLayout>

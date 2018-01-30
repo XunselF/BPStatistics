@@ -97,7 +97,7 @@ public class ManagementFragment extends Fragment {
                 Toast.makeText(getActivity(),"test",Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_setting:
-                Intent intent = new Intent(getActivity(),SettingPrizeActivity.class);
+                Intent intent = new Intent(getActivity(),SettingActivity.class);
                 startActivity(intent);
                 break;
             default:
