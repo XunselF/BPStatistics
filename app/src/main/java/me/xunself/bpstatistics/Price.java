@@ -7,7 +7,20 @@ import org.litepal.crud.DataSupport;
  */
 
 public class Price extends DataSupport{
+    private int id;
     private String priceName;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setPriceName(String priceName) {
+        this.priceName = priceName;
+    }
+    public Price(){
+
+    }
+
     public Price(String priceName){
         this.priceName = priceName;
     }

@@ -40,6 +40,7 @@ public class SettingPriceActivity extends AppCompatActivity {
      */
     private void getPrizes(){
         priceList = DataSupport.findAll(Price.class);
+        priceAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -52,7 +53,7 @@ public class SettingPriceActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_add:
-                showDialog();
+                showDialog(null);
                 break;
         }
         return true;
@@ -61,13 +62,22 @@ public class SettingPriceActivity extends AppCompatActivity {
     /**
      * 弹窗
      */
-    private void showDialog(){
+    private void showDialog(final Price data){
         View view = (LinearLayout) getLayoutInflater().inflate(R.layout.alertdialog_price,null);
         final EditText et = (EditText) view.findViewById(R.id.input_price);
 
+        String button;
+        if (data == null){
+            button = "确定";
+        }else{
+            button = "修改";
+            et.setText(data.getPriceName());
+            et.setSelection(data.getPriceName().length());
+        }
+
         new AlertDialog.Builder(this).setTitle("价格类型")
                 .setView(view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                .setPositiveButton(button, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         String input = et.getText().toString();
@@ -80,10 +90,25 @@ public class SettingPriceActivity extends AppCompatActivity {
                                     return;
                                 }
                             }
-                            Price price = new Price(input);
-                            priceList.add(price);
-                            price.save();
-                            Toast.makeText(SettingPriceActivity.this,"保存成功！",Toast.LENGTH_SHORT).show();
+
+                            if (data != null){
+                                /**
+                                 * 对价格进行修改
+                                 */
+                                Price price = new Price();
+                                price.setPriceName(input);
+                                price.update(data.getId());
+                                Toast.makeText(SettingPriceActivity.this,"修改成功！",Toast.LENGTH_SHORT).show();
+                                getPrizes();
+
+                            }else{
+
+                                Price price = new Price(input);
+                                price.save();
+                                Toast.makeText(SettingPriceActivity.this,"保存成功！",Toast.LENGTH_SHORT).show();
+                                getPrizes();
+                            }
+
                         }
                     }
                 })
@@ -95,7 +120,6 @@ public class SettingPriceActivity extends AppCompatActivity {
      * 初始化
      */
     private void init(){
-        getPrizes();
         toolbar = (Toolbar) findViewById(R.id.setting_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -108,6 +132,7 @@ public class SettingPriceActivity extends AppCompatActivity {
         priceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         priceAdapter = new SettingPriceActivity.PriceAdapter();
         priceRecyclerView.setAdapter(priceAdapter);
+        getPrizes();
     }
     class PriceAdapter extends RecyclerView.Adapter<SettingPriceActivity.PriceAdapter.ViewHolder>{
         class ViewHolder extends RecyclerView.ViewHolder{
@@ -129,12 +154,31 @@ public class SettingPriceActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final SettingPriceActivity.PriceAdapter.ViewHolder holder, int position) {
-            Price price = priceList.get(position);
+            final Price price = priceList.get(position);
             holder.priceNameText.setText(price.getPriceName());
             holder.priceItemLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
                     PopupMenu popupMenu = new PopupMenu(SettingPriceActivity.this,holder.priceItemLayout);
+                    popupMenu.getMenuInflater().inflate(R.menu.setting_popupmenu,popupMenu.getMenu());
+                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem menuItem) {
+                            switch(menuItem.getItemId()){
+                                case R.id.action_price_update:
+                                    showDialog(price);
+                                    break;
+                                case R.id.action_price_delete:
+                                    price.delete();
+                                    priceList.remove(price);
+                                    getPrizes();
+                                    Toast.makeText(SettingPriceActivity.this,"删除成功！",Toast.LENGTH_SHORT).show();
+                                    break;
+                            }
+                            return true;
+                        }
+                    });
+                    popupMenu.show();
                     return true;
                 }
             });
