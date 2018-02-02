@@ -13,12 +13,14 @@ public class BoxPrice extends DataSupport{
     private String pName;
     private double bPrice;
     private Date bDate;
+    private int ifLatest;
 
-    public BoxPrice(String bName,String pName,double bPrize,Date bDate){
+    public BoxPrice(String bName,String pName,double bPrize,Date bDate,int ifLatest){
         this.bDate = bDate;
         this.bName = bName;
         this.pName = pName;
         this.bPrice = bPrize;
+        this.ifLatest = ifLatest;
     }
 
     public String getbName() {
@@ -35,5 +37,9 @@ public class BoxPrice extends DataSupport{
 
     public String getpName() {
         return pName;
+    }
+
+    public int getifLatest(){
+        return ifLatest;
     }
 }

@@ -59,6 +59,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="价格:"/>
+            <TextView
+                android:id="@+id/ifHavePrice"
+                android:text="暂无"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"/>
         </LinearLayout>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/box_prize_recyclerview"
