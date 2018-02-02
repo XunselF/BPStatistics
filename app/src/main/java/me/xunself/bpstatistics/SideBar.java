@@ -5,10 +5,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import java.net.InterfaceAddress;
@@ -31,8 +33,14 @@ public class SideBar extends View {
 
     private TextView textDialog;
 
+    private SideBar sideBar;
+
     public void setTextView(TextView textDialog){
         this.textDialog = textDialog;
+    }
+
+    public void setSideBar(SideBar sideBar){
+        this.sideBar = sideBar;
     }
 
     public SideBar(Context context) {
@@ -94,6 +102,9 @@ public class SideBar extends View {
                 invalidate();
                 if (textDialog != null){
                     textDialog.setVisibility(View.INVISIBLE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        sideBar.setBackground(getResources().getDrawable(R.drawable.sidebar));
+                    }
                 }
                 break;
             default:
@@ -105,6 +116,9 @@ public class SideBar extends View {
                         if (textDialog != null){
                             textDialog.setText(letters[c]);
                             textDialog.setVisibility(View.VISIBLE);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                sideBar.setBackground(getResources().getDrawable(R.drawable.sidebar_select));
+                            }
                         }
                         choose = c;
                         invalidate();
@@ -118,6 +132,7 @@ public class SideBar extends View {
     public void setOnTouchLetterChangedListener(OnTouchLetterChangedListener onTouchLetterChangedListener){
         this.onTouchLetterChangedListener = onTouchLetterChangedListener;
     }
+
 
 
     public interface OnTouchLetterChangedListener{

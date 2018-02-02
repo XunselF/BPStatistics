@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
@@ -25,6 +26,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,6 +56,9 @@ public class ManagementFragment extends Fragment {
     private SideBar sideBar;
     private TextView textDialog;
 
+    private RelativeLayout dataInfoLayout;
+    private RelativeLayout noDataInfoLayout;
+
     private PinyinComparator pinyinComparator = new PinyinComparator();
 
     InputMethodManager inputMethodManager;
@@ -77,6 +82,8 @@ public class ManagementFragment extends Fragment {
     private void init(){
         sideBar = (SideBar) view.findViewById(R.id.sideBar);
         textDialog = (TextView) view.findViewById(R.id.textDialog);
+        dataInfoLayout = (RelativeLayout) view.findViewById(R.id.datainfo_layout);
+        noDataInfoLayout = (RelativeLayout) view.findViewById(R.id.nodatainfo_layout);
         boxRecyclerview = (RecyclerView) view.findViewById(R.id.box_recyclerview);
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         boxRecyclerview.setLayoutManager(linearLayoutManager);
@@ -84,6 +91,7 @@ public class ManagementFragment extends Fragment {
         boxRecyclerview.setAdapter(boxAdapter);
 
         sideBar.setTextView(textDialog);
+        sideBar.setSideBar(sideBar);
 
         sideBar.setOnTouchLetterChangedListener(new SideBar.OnTouchLetterChangedListener() {
             @Override
@@ -122,6 +130,14 @@ public class ManagementFragment extends Fragment {
             boxList.clear();
         }
         boxList = DataSupport.findAll(Box.class);
+
+        if (boxList.size() == 0){
+            dataInfoLayout.setVisibility(View.GONE);
+            noDataInfoLayout.setVisibility(View.VISIBLE);
+        }else{
+            dataInfoLayout.setVisibility(View.VISIBLE);
+            noDataInfoLayout.setVisibility(View.GONE);
+        }
 
         for (int i = 0; i < boxList.size(); i++){
             Box box = boxList.get(i);

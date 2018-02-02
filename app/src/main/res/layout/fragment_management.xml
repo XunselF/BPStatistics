@@ -2,7 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <include android:id="@+id/nodatainfo_layout"
+         layout="@layout/fragment_nodatainfo" android:visibility="gone"/>
     <RelativeLayout
+        android:id="@+id/datainfo_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <android.support.v7.widget.RecyclerView
