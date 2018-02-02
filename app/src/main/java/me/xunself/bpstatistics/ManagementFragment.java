@@ -29,10 +29,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.sourceforge.pinyin4j.PinyinHelper;
+
 import org.litepal.crud.DataSupport;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -48,6 +51,10 @@ public class ManagementFragment extends Fragment {
 
     private List<Box> boxList;
 
+    private SideBar sideBar;
+    private TextView textDialog;
+
+    private PinyinComparator pinyinComparator = new PinyinComparator();
 
     InputMethodManager inputMethodManager;
     @Nullable
@@ -68,12 +75,41 @@ public class ManagementFragment extends Fragment {
      * 初始化
      */
     private void init(){
+        sideBar = (SideBar) view.findViewById(R.id.sideBar);
+        textDialog = (TextView) view.findViewById(R.id.textDialog);
         boxRecyclerview = (RecyclerView) view.findViewById(R.id.box_recyclerview);
-        boxRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        boxRecyclerview.setLayoutManager(linearLayoutManager);
         boxAdapter = new BoxAdapter();
         boxRecyclerview.setAdapter(boxAdapter);
 
+        sideBar.setTextView(textDialog);
+
+        sideBar.setOnTouchLetterChangedListener(new SideBar.OnTouchLetterChangedListener() {
+            @Override
+            public void onTouchingLetterChanged(String s) {
+                int position = getPositionForSection(s.toUpperCase().charAt(0));
+                if (position != -1){
+                    //跳转到首次出现该字符的位置
+                    linearLayoutManager.scrollToPositionWithOffset(position,0);
+                }
+            }
+        });
         getBoxList();
+    }
+
+    /**
+     * 根据首字符找出第一次出现该首字母的位置
+     */
+    private int getPositionForSection(int section){
+        for (int i = 0; i < boxList.size(); i++){
+            String sortStr = boxList.get(i).getbLetter();
+            char firstChar = sortStr.toUpperCase().charAt(0);
+            if (firstChar == section){
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -86,8 +122,34 @@ public class ManagementFragment extends Fragment {
             boxList.clear();
         }
         boxList = DataSupport.findAll(Box.class);
+
+        for (int i = 0; i < boxList.size(); i++){
+            Box box = boxList.get(i);
+            String pinYin = PinyinUnils.getPinYin(box.getbName());
+
+            String sortString = pinYin.substring(0,1).toUpperCase();
+
+            box.setbPinyin(pinYin.toUpperCase());
+
+            //通过正则表达式判断首字母为英文字母
+            if (sortString.matches("[A-Z]")){
+                box.setbLetter(sortString);
+            }else{
+                box.setbLetter("#");
+            }
+            boxList.set(i,box);
+        }
+
+        //进行排序
+        Collections.sort(boxList,pinyinComparator);
+
+
+
+
         boxAdapter.notifyDataSetChanged();
     }
+
+
 
     /**
      * 获取数据

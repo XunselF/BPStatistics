@@ -10,6 +10,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
         <TextView
+            android:id="@+id/textDialog"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:gravity="center"
@@ -17,8 +18,10 @@
             android:text="A"
             android:textSize="50dp"
             android:textColor="#fff"
-            android:background="@drawable/textdialog"/>
+            android:background="@drawable/textdialog"
+            android:visibility="invisible"/>
         <me.xunself.bpstatistics.SideBar
+            android:id="@+id/sideBar"
             android:layout_width="20dp"
             android:layout_height="match_parent"
             android:background="@drawable/sidebar"

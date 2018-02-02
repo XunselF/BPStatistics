@@ -31,7 +31,7 @@ public class SideBar extends View {
 
     private TextView textDialog;
 
-    private void setTextView(TextView textDialog){
+    public void setTextView(TextView textDialog){
         this.textDialog = textDialog;
     }
 
@@ -97,7 +97,7 @@ public class SideBar extends View {
                 }
                 break;
             default:
-                if (oldChoose != choose){
+                if (oldChoose != c){
                     if (c >= 0 && c < letters.length){
                         if (listener != null){
                             listener.onTouchingLetterChanged(letters[c]);
