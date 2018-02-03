@@ -24,6 +24,10 @@ public class BoxPrice extends DataSupport{
         this.ifLatest = ifLatest;
     }
 
+    public void setpName(String pName) {
+        this.pName = pName;
+    }
+
     public BoxPrice(){
 
     }

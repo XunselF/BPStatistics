@@ -6,11 +6,16 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +23,7 @@ import android.widget.Toast;
 import org.litepal.crud.DataSupport;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BoxInfoActivity extends AppCompatActivity {
@@ -27,6 +33,14 @@ public class BoxInfoActivity extends AppCompatActivity {
     private TextView textBContent;
 
     private TextView textBTime;
+
+    private RecyclerView priceRecyclerView;
+
+    private PriceAdapter priceAdapter;
+
+    private int mValue = 3;
+
+
 
 
 
@@ -115,6 +129,9 @@ public class BoxInfoActivity extends AppCompatActivity {
                         Toast.makeText(BoxInfoActivity.this,"修改成功！",Toast.LENGTH_SHORT).show();
                         ManagementFragment.closeDialog(dialogInterface);
 
+                        mBox.setbName(bName);
+                        mBox.setbContent(bContent);
+
                         toolbar.setTitle(bName);
                         if (bContent.equals("")){
                             textBContent.setText("为空");
@@ -138,6 +155,13 @@ public class BoxInfoActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         textBContent = (TextView) findViewById(R.id.box_content);
         textBTime = (TextView) findViewById(R.id.box_createtime);
+
+        priceRecyclerView = (RecyclerView) findViewById(R.id.price_recyclerview);
+        priceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        priceAdapter = new PriceAdapter();
+        priceRecyclerView.setAdapter(priceAdapter);
+
+
         setSupportActionBar(toolbar);
         toolbar.setTitle(mBox.getbName());
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -155,5 +179,127 @@ public class BoxInfoActivity extends AppCompatActivity {
         }
 
         textBTime.setText(sdf.format(mBox.getbTime()));
+    }
+
+    class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.ViewHolder>{
+
+        List<Price> prices;
+
+        class ViewHolder extends RecyclerView.ViewHolder{
+            TextView priceName;
+            TextView nodataLayout;
+            ImageView createPrice;
+            ImageView priceList;
+            RecyclerView pricesRecyclerView;
+            public ViewHolder(View itemView) {
+                super(itemView);
+                priceName = (TextView) itemView.findViewById(R.id.box_price_name);
+                nodataLayout = (TextView) itemView.findViewById(R.id.nodata_layout);
+                createPrice = (ImageView) itemView.findViewById(R.id.create_price);
+                priceList = (ImageView) itemView.findViewById(R.id.price_list);
+                pricesRecyclerView = (RecyclerView) itemView.findViewById(R.id.prices_recyclerview);
+            }
+        }
+
+        public PriceAdapter(){
+            prices = DataSupport.findAll(Price.class);
+        }
+
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(BoxInfoActivity.this).inflate(R.layout.box_prices_item,parent,false);
+            ViewHolder holder = new ViewHolder(view);
+            return holder;
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            Price price = prices.get(position);
+            holder.priceName.setText(price.getPriceName());
+
+            List<BoxPrice> boxPriceList = DataSupport.where("bName = ? and pName = ?",mBox.getbName(),price.getPriceName()).order("id desc").limit(mValue).find(BoxPrice.class);
+
+            if (boxPriceList.size() != 0){
+                holder.nodataLayout.setVisibility(View.GONE);
+            }else{
+                holder.nodataLayout.setVisibility(View.VISIBLE);
+            }
+
+            holder.pricesRecyclerView.setLayoutManager(new LinearLayoutManager(BoxInfoActivity.this));
+            ItemPriceAdapter itemPriceAdapter = new ItemPriceAdapter(boxPriceList);
+            holder.pricesRecyclerView.setAdapter(itemPriceAdapter);
+            /**
+             * 添加价格点击事件
+             */
+            holder.createPrice.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                }
+            });
+            /**
+             * 价格表的点击事件
+             */
+            holder.priceList.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return prices.size();
+        }
+
+
+    }
+
+    class ItemPriceAdapter extends RecyclerView.Adapter<ItemPriceAdapter.ViewHolder>{
+
+        List<BoxPrice> boxPriceList;
+
+        class ViewHolder extends RecyclerView.ViewHolder{
+            ImageView ifLaterst;
+            TextView priceTime;
+            TextView itemPrice;
+            public ViewHolder(View itemView) {
+                super(itemView);
+                ifLaterst = (ImageView) itemView.findViewById(R.id.ifLatest);
+                priceTime = (TextView) itemView.findViewById(R.id.price_time);
+                itemPrice = (TextView) itemView.findViewById(R.id.item_price);
+            }
+        }
+        public ItemPriceAdapter(List<BoxPrice> boxPriceList){
+            this.boxPriceList = boxPriceList;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(BoxInfoActivity.this).inflate(R.layout.boxinfo_boxprice_item,parent,false);
+            ViewHolder holder = new ViewHolder(view);
+            return holder;
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            BoxPrice boxPrice = boxPriceList.get(position);
+            if (boxPrice.getifLatest() == 1){
+                holder.ifLaterst.setImageResource(R.drawable.ic_star_border_black_36dp);
+            }else{
+                holder.ifLaterst.setImageResource(0);
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            holder.itemPrice.setText(boxPrice.getbPrice() + "");
+            holder.priceTime.setText(sdf.format(boxPrice.getbDate()));
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return boxPriceList.size();
+        }
     }
 }

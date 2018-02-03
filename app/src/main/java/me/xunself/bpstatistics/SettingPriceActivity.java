@@ -98,6 +98,10 @@ public class SettingPriceActivity extends AppCompatActivity {
                                 Price price = new Price();
                                 price.setPriceName(input);
                                 price.update(data.getId());
+
+                                BoxPrice boxPrice = new BoxPrice();
+                                boxPrice.setpName(input);
+                                boxPrice.updateAll("pName = ?",data.getPriceName());
                                 Toast.makeText(SettingPriceActivity.this,"修改成功！",Toast.LENGTH_SHORT).show();
                                 getPrizes();
 
@@ -170,6 +174,7 @@ public class SettingPriceActivity extends AppCompatActivity {
                                     break;
                                 case R.id.action_price_delete:
                                     price.delete();
+                                    DataSupport.deleteAll(BoxPrice.class,"pName = ?",price.getPriceName());
                                     priceList.remove(price);
                                     getPrizes();
                                     Toast.makeText(SettingPriceActivity.this,"删除成功！",Toast.LENGTH_SHORT).show();

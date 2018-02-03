@@ -60,6 +60,7 @@ public class ManagementFragment extends Fragment {
     private Button noSelectAllButton;
     private Button selectAllButton;
     private RelativeLayout deleteAllButton;
+    private TextView itemNumber;
 
     private RecyclerView boxRecyclerview;
     private BoxAdapter boxAdapter;
@@ -102,6 +103,7 @@ public class ManagementFragment extends Fragment {
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
         noSelectAllButton = (Button) view.findViewById(R.id.no_select_all);
         selectAllButton = (Button) view.findViewById(R.id.select_all);
+        itemNumber = (TextView) view.findViewById(R.id.item_number);
         deleteAllButton = (RelativeLayout) view.findViewById(R.id.delete_all_layout);
         itemSelectedTitle = (LinearLayout) view.findViewById(R.id.itemselected_title);
         sideBar = (SideBar) view.findViewById(R.id.sideBar);
@@ -228,7 +230,13 @@ public class ManagementFragment extends Fragment {
      */
     private List<BoxPrice> getBoxPrizeList(String boxName){
         List<BoxPrice> boxPriceList = new ArrayList<>();
-        boxPriceList = DataSupport.where("bName = ? and ifLatest = ?",boxName,"1").find(BoxPrice.class);
+        List<Price> prices = DataSupport.findAll(Price.class);
+        for (Price price : prices){
+            List<BoxPrice> boxPrices = DataSupport.where("bName = ? and ifLatest = ? and pName = ?",boxName,"1",price.getPriceName()).find(BoxPrice.class);
+            if (boxPrices.size() != 0){
+                boxPriceList.add(boxPrices.get(0));
+            }
+        }
         return boxPriceList;
     }
 
@@ -317,6 +325,8 @@ public class ManagementFragment extends Fragment {
                             holder.boxItemSelected.setChecked(true);
                             holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
                         }
+
+                        getItemNumber();
                     }else{
                         Intent intent = new Intent(getActivity(),BoxInfoActivity.class);
                         intent.putExtra("extra_box",box);
@@ -334,17 +344,17 @@ public class ManagementFragment extends Fragment {
                 @Override
                 public boolean onLongClick(View view) {
                     if (!ifItemSelected){
-
-                        /**
-                         * 开启多选模式
-                         */
-                        displayItemSelected();
-
                         /**
                          * 被长按的按钮默认选中
                          */
                         holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
                         holder.boxItemSelected.setChecked(true);
+                        /**
+                         * 开启多选模式
+                         */
+                        displayItemSelected();
+
+
                     }
                     return true;
                 }
@@ -362,6 +372,7 @@ public class ManagementFragment extends Fragment {
                     }else{
                         holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
                     }
+                    getItemNumber();
                 }
             });
             //数据加载
@@ -408,6 +419,8 @@ public class ManagementFragment extends Fragment {
             for (ViewHolder holder : holderList){
                 holder.boxItemSelected.setVisibility(View.VISIBLE);
             }
+
+            getItemNumber();
         }
 
         /**
@@ -464,17 +477,33 @@ public class ManagementFragment extends Fragment {
          * 进行删除操作
          */
         public void deleteAllItem(){
+            int selectedNumber = 0;
             if (holderList != null){
                 for (ViewHolder holder : holderList){
                    if (holder.boxItemSelected.isChecked()){
                        DataSupport.delete(Box.class,boxList.get(holder.getAdapterPosition()).getId());
                        DataSupport.deleteAll(BoxPrice.class,"bName = ?",boxList.get(holder.getAdapterPosition()).getbName());
+                       selectedNumber ++;
                    }
                 }
-                Toast.makeText(getActivity(),"删除成功！",Toast.LENGTH_SHORT).show();
+                if (selectedNumber != 0){
+                    Toast.makeText(getActivity(),"删除成功！",Toast.LENGTH_SHORT).show();
+                    quitItemSelected();
+                    getBoxList();
+                }
             }
-            quitItemSelected();
-            getBoxList();
+        }
+
+        public void getItemNumber(){
+            int number = 0;
+            if (holderList != null){
+                for (ViewHolder holder : holderList){
+                    if (holder.boxItemSelected.isChecked()){
+                        number ++;
+                    }
+                }
+            }
+            itemNumber.setText(number + "");
         }
 
     }
@@ -547,6 +576,8 @@ public class ManagementFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
+                        boolean ifExist = false;
+
                         String boxName = inputBoxName.getText().toString().trim();
                         String boxContent = inputBoxContent.getText().toString().trim();
 
@@ -561,36 +592,82 @@ public class ManagementFragment extends Fragment {
 
                         for (Box box : boxList){
                             if (box.getbName().equals(boxName)){
-                                noCloseDialog(dialogInterface);
-                                Toast.makeText(getActivity(),"您填写的纸箱已存在！",Toast.LENGTH_SHORT).show();
-                                return;
+                                ifExist = true;
+                                break;
                             }
                         }
 
 
                         Box box = new Box(boxName,boxContent,new Date());
 
+                        if (!ifExist){
+                            if (box.save()){
+                                Toast.makeText(getActivity(),"保存成功！",Toast.LENGTH_SHORT).show();
 
-                        if (box.save()){
-                            Toast.makeText(getActivity(),"保存成功！",Toast.LENGTH_SHORT).show();
+                                if (priceList.size() != 0){
+                                    BoxPrice boxPrice;
+
+                                    int key = 0;//用于进行搜索集合的索引
+                                    for (int j = 0; j < priceList.size(); j++){
+                                        key = priceList.keyAt(j);   //获取索引
+
+                                        boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),1);
+
+                                        if (boxPrice.save()){
+                                            Log.d("price",DataSupport.findAll(Price.class).get(key).getPriceName() + " success");
+                                        }
+                                    }
+                                }
+                            }else{
+                                Toast.makeText(getActivity(),"保存失败！",Toast.LENGTH_SHORT).show();
+                            }
+                        }else{
+
+
+                            Box oldBox = DataSupport.where("bName = ?",boxName).find(Box.class).get(0);
+                            Box newBox = new Box();
+                            if (oldBox.getbContent().equals("")){
+                                newBox.setbContent(boxContent);
+                            }else if (!boxContent.equals("")){
+                                newBox.setbContent(oldBox.getbContent() + "\n" + boxContent);
+                            }
+                            newBox.update(oldBox.getId());
 
                             if (priceList.size() != 0){
                                 BoxPrice boxPrice;
 
                                 int key = 0;//用于进行搜索集合的索引
+                                int number = 0;
                                 for (int j = 0; j < priceList.size(); j++){
                                     key = priceList.keyAt(j);   //获取索引
+                                    if (!priceList.get(key).equals("")){
+                                        boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),1);
+                                        BoxPrice price = new BoxPrice();
+                                        price.setToDefault("ifLatest");
+                                        price.updateAll("bName = ? and pName = ?",boxName,DataSupport.findAll(Price.class).get(key).getPriceName());
 
-                                    boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),1);
-
-                                    if (boxPrice.save()){
-                                        Log.d("price",DataSupport.findAll(Price.class).get(key).getPriceName() + " success");
+                                        if (boxPrice.save()){
+                                            Log.d("price",DataSupport.findAll(Price.class).get(key).getPriceName() + " success");
+                                        }
+                                    }else{
+                                        number ++;
                                     }
+
                                 }
+                                if (number == priceList.size()){
+                                    noCloseDialog(dialogInterface);
+                                    Toast.makeText(getActivity(),"该纸箱已存在！",Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                                Toast.makeText(getActivity(),"已为您修改为最新价格！",Toast.LENGTH_SHORT).show();
+                            }else{
+                                noCloseDialog(dialogInterface);
+                                Toast.makeText(getActivity(),"该纸箱已存在！",Toast.LENGTH_SHORT).show();
+                                return;
                             }
-                        }else{
-                            Toast.makeText(getActivity(),"保存失败！",Toast.LENGTH_SHORT).show();
+
                         }
+
 
 
                         closeDialog(dialogInterface);
