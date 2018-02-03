@@ -585,7 +585,7 @@ public class ManagementFragment extends Fragment {
                         SparseArray<String> priceList = priceAdapter.getPrice();
 
                         if (boxName == null || boxName.trim().equals("")){
-                            noCloseDialog(dialogInterface);
+                            OperateDialog.noCloseDialog(dialogInterface);
                             Toast.makeText(getActivity(),"请填写纸箱型号！",Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -641,10 +641,10 @@ public class ManagementFragment extends Fragment {
                                 for (int j = 0; j < priceList.size(); j++){
                                     key = priceList.keyAt(j);   //获取索引
                                     if (!priceList.get(key).equals("")){
-                                        boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),1);
-                                        BoxPrice price = new BoxPrice();
-                                        price.setToDefault("ifLatest");
-                                        price.updateAll("bName = ? and pName = ?",boxName,DataSupport.findAll(Price.class).get(key).getPriceName());
+                                        boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),BoxPrice.LATEST_PRICE);
+
+                                        //对之前的数据进行修改
+                                        BoxPrice.updateIfLatest(boxName,DataSupport.findAll(Price.class).get(key).getPriceName());
 
                                         if (boxPrice.save()){
                                             Log.d("price",DataSupport.findAll(Price.class).get(key).getPriceName() + " success");
@@ -655,13 +655,13 @@ public class ManagementFragment extends Fragment {
 
                                 }
                                 if (number == priceList.size()){
-                                    noCloseDialog(dialogInterface);
+                                    OperateDialog.noCloseDialog(dialogInterface);
                                     Toast.makeText(getActivity(),"该纸箱已存在！",Toast.LENGTH_SHORT).show();
                                     return;
                                 }
                                 Toast.makeText(getActivity(),"已为您修改为最新价格！",Toast.LENGTH_SHORT).show();
                             }else{
-                                noCloseDialog(dialogInterface);
+                                OperateDialog.noCloseDialog(dialogInterface);
                                 Toast.makeText(getActivity(),"该纸箱已存在！",Toast.LENGTH_SHORT).show();
                                 return;
                             }
@@ -670,7 +670,7 @@ public class ManagementFragment extends Fragment {
 
 
 
-                        closeDialog(dialogInterface);
+                        OperateDialog.closeDialog(dialogInterface);
 
                         getBoxList();
 
@@ -679,38 +679,15 @@ public class ManagementFragment extends Fragment {
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        closeDialog(dialogInterface);
+                        OperateDialog.closeDialog(dialogInterface);
                     }
                 })
                 .show();
     }
 
-    /**
-     * 不关闭dialog
-     */
-    public static void noCloseDialog(DialogInterface dialog){
-        //不关闭对话框
-        try{
-            Field field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
-            field.setAccessible(true);
-            field.set(dialog,false);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * 关闭dialog
-     */
-    public static void closeDialog(DialogInterface dialog){
-        try {
-            Field field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
-            field.setAccessible(true);
-            field.set(dialog,true);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+
+
 
     class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.ViewHolder>{
 

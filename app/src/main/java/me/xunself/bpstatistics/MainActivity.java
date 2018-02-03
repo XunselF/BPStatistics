@@ -1,6 +1,7 @@
 package me.xunself.bpstatistics;
 
 
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v4.app.FragmentTransaction;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.litepal.LitePal;
 
@@ -20,7 +22,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar mainToolBar;
 
 
-
+    private TextView customerText;
+    private TextView managementText;
     private ImageView customerImage;
     private ImageView managementImage;
     private LinearLayout customerButtonLayout;
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化
      */
     private void init(){
+        initFragment();
         sharedPreferences = getSharedPreferences("BPS_data", Context.MODE_PRIVATE);
         if (!sharedPreferences.getBoolean("ifInit",false)){
             initPrizeDatabase();
@@ -60,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         mainToolBar = (Toolbar) findViewById(R.id.main_toolBar);
         setSupportActionBar(mainToolBar);
+        customerText = (TextView) findViewById(R.id.customer_text);
+        managementText = (TextView) findViewById(R.id.management_text);
         customerImage = (ImageView) findViewById(R.id.customer_iamge);
         managementImage = (ImageView) findViewById(R.id.management_image);
         customerButtonLayout = (LinearLayout) findViewById(R.id.customer_layout);
@@ -94,31 +100,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     /**
+     * 初始化Fragment
+     */
+    private void initFragment(){
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+
+        if (managementFragment == null){
+            managementFragment = new ManagementFragment();
+            fragmentTransaction.add(R.id.main_frameLayout,managementFragment);
+        }
+        if (customerFragment == null){
+            customerFragment = new CustomerFragment();
+            fragmentTransaction.add(R.id.main_frameLayout,customerFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
+    /**
      * 显示fragment
      */
     private void displayFragment(int Tag){
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if (customerFragment == null || managementFragment == null){
 
-            /**
-             * 第一次进入页面的初始化
-             */
-
-            customerFragment = new CustomerFragment();
-            managementFragment = new ManagementFragment();
-
-            fragmentTransaction.add(R.id.main_frameLayout,customerFragment);
-            fragmentTransaction.add(R.id.main_frameLayout,managementFragment);
-        }
 
         if (Tag == DISPLAY_CUSTOMER_FRAGMENT){
+
+
 
             /**
              * 显示客户页面
              */
             fragmentTransaction.show(customerFragment);
             fragmentTransaction.hide(managementFragment);
+            fragmentTransaction.commit();
+            managementText.setTextColor(getResources().getColor(android.R.color.black));
+            customerText.setTextColor(getResources().getColor(R.color.colorPrimary));
             customerImage.setImageResource(R.drawable.ic_accessibility_amber_600_24dp);
             managementImage.setImageResource(R.drawable.ic_account_balance_wallet_black_24dp);
 
@@ -127,14 +144,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             /**
              * 显示管理纸箱界面
              */
+
+
             fragmentTransaction.show(managementFragment);
             fragmentTransaction.hide(customerFragment);
-
+            fragmentTransaction.commit();
+            customerText.setTextColor(getResources().getColor(android.R.color.black));
+            managementText.setTextColor(getResources().getColor(R.color.colorPrimary));
             customerImage.setImageResource(R.drawable.ic_accessibility_black_24dp);
             managementImage.setImageResource(R.drawable.ic_account_balance_wallet_amber_600_24dp);
         }
 
-        fragmentTransaction.commit();
+
     }
 
 }

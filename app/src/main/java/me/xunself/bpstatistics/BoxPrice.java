@@ -16,6 +16,11 @@ public class BoxPrice extends DataSupport{
     private Date bDate;
     private int ifLatest;
 
+    //之前的价格参数
+    public static final int BEFORE_PRICE = 0;
+    //最新的价格参数
+    public static final int LATEST_PRICE = 1;
+
     public BoxPrice(String bName,String pName,double bPrize,Date bDate,int ifLatest){
         this.bDate = bDate;
         this.bName = bName;
@@ -30,6 +35,10 @@ public class BoxPrice extends DataSupport{
 
     public BoxPrice(){
 
+    }
+
+    public void setIfLatest(int ifLatest) {
+        this.ifLatest = ifLatest;
     }
 
     public int getId() {
@@ -58,5 +67,16 @@ public class BoxPrice extends DataSupport{
 
     public int getifLatest(){
         return ifLatest;
+    }
+
+    public static void updateIfLatest(String bName,String pName){
+        if (DataSupport.where("bName = ? and pName = ? and ifLatest = ?",
+                bName,pName,BoxPrice.LATEST_PRICE + "").find(BoxPrice.class).size() != 0){
+            //对原有数据进行修改
+            BoxPrice updatePrice = new BoxPrice();
+            updatePrice.setToDefault("ifLatest");
+            //对最新的价格进行修改
+            updatePrice.updateAll("bName = ? and pName = ? and ifLatest = ?",bName,pName,BoxPrice.LATEST_PRICE + "");
+        }
     }
 }

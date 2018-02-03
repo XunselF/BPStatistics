@@ -2,11 +2,13 @@ package me.xunself.bpstatistics;
 
 import org.litepal.crud.DataSupport;
 
+import java.io.Serializable;
+
 /**
  * Created by XunselF on 2018/1/23.
  */
 
-public class Price extends DataSupport{
+public class Price extends DataSupport implements Serializable{
     private int id;
     private String priceName;
 
