@@ -19,6 +19,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Toolbar mainToolBar;
 
+
+
     private ImageView customerImage;
     private ImageView managementImage;
     private LinearLayout customerButtonLayout;

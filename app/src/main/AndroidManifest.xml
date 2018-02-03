@@ -19,7 +19,8 @@
         </activity>
         <activity android:name=".SettingActivity" />
         <activity android:name=".AboutAppActivity" />
-        <activity android:name=".SettingPriceActivity"></activity>
+        <activity android:name=".SettingPriceActivity" />
+        <activity android:name=".BoxInfoActivity"></activity>
     </application>
 
 </manifest>

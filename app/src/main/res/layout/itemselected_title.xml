@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/colorPrimary"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp">
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
+        android:text="取消"
+        android:textSize="13dp"
+        android:background="@drawable/button"
+        android:textColor="@color/colorPrimary"
+        android:layout_gravity="center"/>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已选择 "
+                android:textSize="16dp"
+                android:textColor="@android:color/white"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textSize="16dp"
+                android:textColor="@android:color/white"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 项"
+                android:textSize="16dp"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
+
+    </LinearLayout>
+    <Button
+        android:id="@+id/no_select_all"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
+        android:text="全不选"
+        android:textSize="13dp"
+        android:background="@drawable/button"
+        android:textColor="@color/colorPrimary"
+        android:layout_gravity="center"
+        android:layout_marginRight="6dp"/>
+    <Button
+        android:id="@+id/select_all"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
+        android:text="全选"
+        android:textSize="13dp"
+        android:background="@drawable/button"
+        android:textColor="@color/colorPrimary"
+        android:layout_gravity="center"/>
+</LinearLayout>

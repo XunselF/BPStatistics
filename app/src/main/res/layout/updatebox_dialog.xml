@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="修改纸箱信息"
+        android:textSize="18dp"
+        android:paddingLeft="20dp"
+        android:paddingTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:textColor="@android:color/black"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="20dp"
+            android:id="@+id/addbox_dialog_layout"
+            android:clickable="true">
+            <EditText
+                android:id="@+id/input_boxName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16dp"
+                android:hint="请输入纸箱型号："/>
+            <EditText
+                android:id="@+id/input_boxContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="请输入纸箱备注：（可不填）"
+                android:textSize="16dp"/>
+
+        </LinearLayout>
+
+
+
+</LinearLayout>

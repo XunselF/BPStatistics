@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
@@ -24,6 +26,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -48,6 +52,15 @@ import java.util.List;
 public class ManagementFragment extends Fragment {
     private View view;
 
+    private Toolbar toolbar;
+    private LinearLayout bottomLayout;
+    private LinearLayout itemSelectedTitle;
+
+    private Button cancelButton;
+    private Button noSelectAllButton;
+    private Button selectAllButton;
+    private RelativeLayout deleteAllButton;
+
     private RecyclerView boxRecyclerview;
     private BoxAdapter boxAdapter;
 
@@ -56,12 +69,16 @@ public class ManagementFragment extends Fragment {
     private SideBar sideBar;
     private TextView textDialog;
 
+    private List<BoxAdapter.ViewHolder> holderList = new ArrayList<>();
+
     private RelativeLayout dataInfoLayout;
     private RelativeLayout noDataInfoLayout;
 
     private PinyinComparator pinyinComparator = new PinyinComparator();
 
     InputMethodManager inputMethodManager;
+
+    private boolean ifItemSelected = false;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -80,6 +97,13 @@ public class ManagementFragment extends Fragment {
      * 初始化
      */
     private void init(){
+        toolbar = (Toolbar) getActivity().findViewById(R.id.main_toolBar);
+        bottomLayout = (LinearLayout) getActivity().findViewById(R.id.bottom_layout);
+        cancelButton = (Button) view.findViewById(R.id.cancel_button);
+        noSelectAllButton = (Button) view.findViewById(R.id.no_select_all);
+        selectAllButton = (Button) view.findViewById(R.id.select_all);
+        deleteAllButton = (RelativeLayout) view.findViewById(R.id.delete_all_layout);
+        itemSelectedTitle = (LinearLayout) view.findViewById(R.id.itemselected_title);
         sideBar = (SideBar) view.findViewById(R.id.sideBar);
         textDialog = (TextView) view.findViewById(R.id.textDialog);
         dataInfoLayout = (RelativeLayout) view.findViewById(R.id.datainfo_layout);
@@ -93,17 +117,48 @@ public class ManagementFragment extends Fragment {
         sideBar.setTextView(textDialog);
         sideBar.setSideBar(sideBar);
 
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //退出多选模式
+                boxAdapter.quitItemSelected();
+            }
+        });
+        noSelectAllButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boxAdapter.noSelectAllItem();
+            }
+        });
+        selectAllButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boxAdapter.selectAllItem();
+            }
+        });
+
+        deleteAllButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boxAdapter.deleteAllItem();
+            }
+        });
+
+
+
         sideBar.setOnTouchLetterChangedListener(new SideBar.OnTouchLetterChangedListener() {
             @Override
             public void onTouchingLetterChanged(String s) {
                 int position = getPositionForSection(s.toUpperCase().charAt(0));
-                if (position != -1){
+                if (position != -1) {
                     //跳转到首次出现该字符的位置
-                    linearLayoutManager.scrollToPositionWithOffset(position,0);
+                    linearLayoutManager.scrollToPositionWithOffset(position, 0);
                 }
             }
         });
+
         getBoxList();
+
     }
 
     /**
@@ -161,6 +216,7 @@ public class ManagementFragment extends Fragment {
 
 
 
+        holderList.clear();
 
         boxAdapter.notifyDataSetChanged();
     }
@@ -187,7 +243,7 @@ public class ManagementFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().getMenuInflater().inflate(R.menu.management_menu,menu);
+        inflater.inflate(R.menu.management_menu,menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -209,12 +265,15 @@ public class ManagementFragment extends Fragment {
 
     class BoxAdapter extends RecyclerView.Adapter<BoxAdapter.ViewHolder>{
 
+
+
         class ViewHolder extends RecyclerView.ViewHolder{
             CardView boxitemLayout;
             TextView boxNameText;
             TextView boxContentText;
             TextView ifHavePrice;
             RecyclerView boxPrizeRecyclerView;
+            CheckBox boxItemSelected;
             public ViewHolder(View itemView) {
                 super(itemView);
                 boxitemLayout = (CardView) itemView.findViewById(R.id.box_item_layout);
@@ -222,6 +281,7 @@ public class ManagementFragment extends Fragment {
                 boxContentText = (TextView) itemView.findViewById(R.id.box_content);
                 ifHavePrice = (TextView) itemView.findViewById(R.id.ifHavePrice);
                 boxPrizeRecyclerView = (RecyclerView) itemView.findViewById(R.id.box_prize_recyclerview);
+                boxItemSelected = (CheckBox) itemView.findViewById(R.id.box_selected);
             }
         }
 
@@ -233,23 +293,86 @@ public class ManagementFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            Box box = boxList.get(position);
+        public void onBindViewHolder(final ViewHolder holder, int position) {
+            final Box box = boxList.get(position);
 
 
+
+
+            holderList.add(holder);
             holder.boxitemLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(getActivity(),"test",Toast.LENGTH_SHORT).show();
+                    /**
+                     * 判断是否进入多选模式
+                     */
+                    if (ifItemSelected){
+                        /**
+                         * 对UI进行修改
+                         */
+                        if (holder.boxItemSelected.isChecked()){
+                            holder.boxItemSelected.setChecked(false);
+                            holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
+                        }else{
+                            holder.boxItemSelected.setChecked(true);
+                            holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
+                        }
+                    }else{
+                        Intent intent = new Intent(getActivity(),BoxInfoActivity.class);
+                        intent.putExtra("extra_box",box);
+                        startActivity(intent);
+                    }
+
                 }
             });
-            
+
+
+            /**
+             * 长按键 可以进行删除操作
+             */
+            holder.boxitemLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (!ifItemSelected){
+
+                        /**
+                         * 开启多选模式
+                         */
+                        displayItemSelected();
+
+                        /**
+                         * 被长按的按钮默认选中
+                         */
+                        holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
+                        holder.boxItemSelected.setChecked(true);
+                    }
+                    return true;
+                }
+            });
+
+
+            holder.boxItemSelected.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    /**
+                     * 对UI进行修改
+                     */
+                    if (holder.boxItemSelected.isChecked()){
+                        holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
+                    }else{
+                        holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
+                    }
+                }
+            });
+            //数据加载
             holder.boxNameText.setText(box.getbName());
             if (box.getbContent().equals("")){
                 holder.boxContentText.setText("(为空)");
             }else{
                 holder.boxContentText.setText(box.getbContent());
             }
+
+            holder.itemView.setTag(box.getId());
 
             BoxPriceAdapter boxPrizeAdapter = new BoxPriceAdapter(getBoxPrizeList(box.getbName()));
             if (getBoxPrizeList(box.getbName()).size() == 0){
@@ -266,6 +389,94 @@ public class ManagementFragment extends Fragment {
         public int getItemCount() {
             return boxList.size();
         }
+
+        /**
+         * 显示所有多选键
+         */
+        public void displayItemSelected(){
+            //将多选模式参数修改为true
+            ifItemSelected = true;
+            //UI布局修改
+            toolbar.setVisibility(View.GONE);
+            bottomLayout.setVisibility(View.GONE);
+            sideBar.setVisibility(View.GONE);
+            itemSelectedTitle.setVisibility(View.VISIBLE);
+            deleteAllButton.setVisibility(View.VISIBLE);
+
+
+            //展示整个列表的多选框
+            for (ViewHolder holder : holderList){
+                holder.boxItemSelected.setVisibility(View.VISIBLE);
+            }
+        }
+
+        /**
+         * 退出多选模式
+         */
+        public void quitItemSelected(){
+            //将多选模式参数修改为true
+            ifItemSelected = false;
+            //UI布局修改
+            toolbar.setVisibility(View.VISIBLE);
+            bottomLayout.setVisibility(View.VISIBLE);
+            sideBar.setVisibility(View.VISIBLE);
+            itemSelectedTitle.setVisibility(View.GONE);
+            deleteAllButton.setVisibility(View.GONE);
+
+
+            //隐藏整个列表的多选框
+            if (holderList != null){
+                for (ViewHolder holder : holderList){
+                    holder.boxItemSelected.setChecked(false);
+                    holder.boxItemSelected.setVisibility(View.GONE);
+                    holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
+                }
+            }
+
+        }
+
+        /**
+         * 全选
+         */
+        public void selectAllItem(){
+            if (holderList != null){
+                for (ViewHolder holder : holderList){
+                    holder.boxItemSelected.setChecked(true);
+                    holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
+                }
+            }
+
+        }
+
+        /**
+         * 全不选
+         */
+        public void noSelectAllItem(){
+            if (holderList != null){
+                for (ViewHolder holder : holderList){
+                    holder.boxItemSelected.setChecked(false);
+                    holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
+                }
+            }
+        }
+
+        /**
+         * 进行删除操作
+         */
+        public void deleteAllItem(){
+            if (holderList != null){
+                for (ViewHolder holder : holderList){
+                   if (holder.boxItemSelected.isChecked()){
+                       DataSupport.delete(Box.class,boxList.get(holder.getAdapterPosition()).getId());
+                       DataSupport.deleteAll(BoxPrice.class,"bName = ?",boxList.get(holder.getAdapterPosition()).getbName());
+                   }
+                }
+                Toast.makeText(getActivity(),"删除成功！",Toast.LENGTH_SHORT).show();
+            }
+            quitItemSelected();
+            getBoxList();
+        }
+
     }
 
     class BoxPriceAdapter extends RecyclerView.Adapter<BoxPriceAdapter.ViewHolder>{
@@ -336,8 +547,8 @@ public class ManagementFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
-                        String boxName = inputBoxName.getText().toString();
-                        String boxContent = inputBoxContent.getText().toString();
+                        String boxName = inputBoxName.getText().toString().trim();
+                        String boxContent = inputBoxContent.getText().toString().trim();
 
 
                         SparseArray<String> priceList = priceAdapter.getPrice();
@@ -400,7 +611,7 @@ public class ManagementFragment extends Fragment {
     /**
      * 不关闭dialog
      */
-    private void noCloseDialog(DialogInterface dialog){
+    public static void noCloseDialog(DialogInterface dialog){
         //不关闭对话框
         try{
             Field field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
@@ -414,7 +625,7 @@ public class ManagementFragment extends Fragment {
     /**
      * 关闭dialog
      */
-    private void closeDialog(DialogInterface dialog){
+    public static void closeDialog(DialogInterface dialog){
         try {
             Field field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
             field.setAccessible(true);

@@ -9,6 +9,7 @@ import java.util.Date;
  */
 
 public class BoxPrice extends DataSupport{
+    private int id;
     private String bName;
     private String pName;
     private double bPrice;
@@ -21,6 +22,18 @@ public class BoxPrice extends DataSupport{
         this.pName = pName;
         this.bPrice = bPrize;
         this.ifLatest = ifLatest;
+    }
+
+    public BoxPrice(){
+
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setbName(String bName) {
+        this.bName = bName;
     }
 
     public String getbName() {
