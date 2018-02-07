@@ -14,7 +14,7 @@ public class Customer extends DataSupport implements Serializable{
     private int id;
     private String cName;
     private String cContent;
-    private List<Order> orderList = new ArrayList<>();
+    private List<Work> workList = new ArrayList<>();
 
     public Customer(){
 
@@ -40,11 +40,11 @@ public class Customer extends DataSupport implements Serializable{
         return cContent;
     }
 
-    public List<Order> getOrderList() {
-        return orderList;
+    public List<Work> getWorkList() {
+        return workList;
     }
 
-    public void setOrderList(List<Order> orderList) {
-        this.orderList = orderList;
+    public void setWorkList(List<Work> workList) {
+        this.workList = workList;
     }
 }

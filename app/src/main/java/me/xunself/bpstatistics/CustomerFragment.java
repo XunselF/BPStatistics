@@ -1,5 +1,8 @@
 package me.xunself.bpstatistics;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,7 +14,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.litepal.crud.DataSupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,7 +63,7 @@ public class CustomerFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_add_customer:
-
+                displayAddOrderDialog();
                 break;
             default:
                 break;
@@ -78,15 +87,15 @@ public class CustomerFragment extends Fragment {
      */
     private void getCustomerList(){
         customerList = new ArrayList<>();
-        List<Order> orders = new ArrayList<>();
-        Order order = new Order();
-        order.setoTime(new Date());
-        order.setoPrice(1.22);
-        orders.add(order);
+        List<Work> works = new ArrayList<>();
+        Work work = new Work();
+        work.setwTime(new Date());
+        work.setwPrice(1.22);
+        works.add(work);
         for (int i = 0; i < 20; i++){
             Customer customer = new Customer();
             customer.setcName("曹客户");
-            customer.setOrderList(orders);
+            customer.setWorkList(works);
             customerList.add(customer);
         }
         customerAdapter.notifyDataSetChanged();
@@ -107,13 +116,13 @@ public class CustomerFragment extends Fragment {
             Customer customer = customerList.get(position);
             holder.cNameText.setText(customer.getcName());
 
-            List<Order> orders = customer.getOrderList();
+            List<Work> works = customer.getWorkList();
 
-            if (orders.size() != 0){
-                Order order = orders.get(orders.size() - 1);
-                holder.oPriceText.setText(order.getoPrice() + "");
+            if (works.size() != 0){
+                Work work = works.get(works.size() - 1);
+                holder.oPriceText.setText(work.getwPrice() + "");
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
-                holder.oTimeText.setText(sdf.format(order.getoTime()));
+                holder.oTimeText.setText(sdf.format(work.getwTime()));
             }
         }
 
@@ -132,6 +141,55 @@ public class CustomerFragment extends Fragment {
                 oTimeText = (TextView) itemView.findViewById(R.id.order_time);
                 oPriceText = (TextView) itemView.findViewById(R.id.order_price);
             }
+        }
+    }
+
+    /**
+     * 添加订单的弹窗
+     */
+    private void displayAddOrderDialog(){
+        final List<String> prices = new ArrayList<>();
+        List<Price> priceList = DataSupport.findAll(Price.class);
+
+        for (int i = 0; i < priceList.size(); i++){
+            prices.add(priceList.get(i).getPriceName());
+        }
+
+        View dialog = LayoutInflater.from(getActivity()).inflate(R.layout.selectprice_dialog,null);
+        final Spinner selectPriceSpinner = (Spinner) dialog.findViewById(R.id.select_prize_spinner);
+        ArrayAdapter adapter = new ArrayAdapter(getActivity(),android.R.layout.simple_spinner_dropdown_item, prices);
+        selectPriceSpinner.setAdapter(adapter);
+        final PriceItemSelectedListener priceItemSelectedListener = new PriceItemSelectedListener();
+        selectPriceSpinner.setOnItemSelectedListener(priceItemSelectedListener);
+        new AlertDialog.Builder(getActivity()).setView(dialog)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        int position = priceItemSelectedListener.getPosition();
+                        String price = prices.get(position);
+                        Intent intent = new Intent(getActivity(),SelectBoxActivity.class);
+                        intent.putExtra("extra_price",price);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("取消",null).show();
+    }
+    class PriceItemSelectedListener implements AdapterView.OnItemSelectedListener{
+
+        int position = 0;
+
+        public int getPosition(){
+            return position;
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            position = i;
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
         }
     }
 }

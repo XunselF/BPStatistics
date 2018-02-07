@@ -21,7 +21,8 @@
         <activity android:name=".AboutAppActivity" />
         <activity android:name=".SettingPriceActivity" />
         <activity android:name=".BoxInfoActivity" />
-        <activity android:name=".InquirePriceActivity"></activity>
+        <activity android:name=".InquirePriceActivity" />
+        <activity android:name=".SelectBoxActivity"></activity>
     </application>
 
 </manifest>

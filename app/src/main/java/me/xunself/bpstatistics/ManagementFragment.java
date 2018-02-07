@@ -18,6 +18,7 @@ import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,6 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -43,7 +45,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by XunselF on 2018/1/22.
@@ -70,7 +74,7 @@ public class ManagementFragment extends Fragment {
     private SideBar sideBar;
     private TextView textDialog;
 
-    private List<BoxAdapter.ViewHolder> holderList = new ArrayList<>();
+
 
     private RelativeLayout dataInfoLayout;
     private RelativeLayout noDataInfoLayout;
@@ -123,7 +127,7 @@ public class ManagementFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //退出多选模式
-                boxAdapter.quitItemSelected();
+                boxAdapter.ifDisplayItemSelected(false);
             }
         });
         noSelectAllButton.setOnClickListener(new View.OnClickListener() {
@@ -135,7 +139,7 @@ public class ManagementFragment extends Fragment {
         selectAllButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boxAdapter.selectAllItem();
+            boxAdapter.selectAllItem();
             }
         });
 
@@ -218,7 +222,7 @@ public class ManagementFragment extends Fragment {
 
 
 
-        holderList.clear();
+
 
         boxAdapter.notifyDataSetChanged();
     }
@@ -273,6 +277,19 @@ public class ManagementFragment extends Fragment {
 
     class BoxAdapter extends RecyclerView.Adapter<BoxAdapter.ViewHolder>{
 
+        SparseBooleanArray mSelectedPositions = new SparseBooleanArray();
+
+        HashMap<Integer,Boolean> boxHashMap = new HashMap<>();
+
+        //设置状态
+        private void setItemChecked(int position,boolean isChecked){
+            mSelectedPositions.put(position,isChecked);
+        }
+
+        //获取状态
+        private boolean isItemChecked(int position){
+            return mSelectedPositions.get(position);
+        }
 
 
         class ViewHolder extends RecyclerView.ViewHolder{
@@ -301,81 +318,9 @@ public class ManagementFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
+        public void onBindViewHolder(final ViewHolder holder, final int position) {
             final Box box = boxList.get(position);
-
-
-
-
-            holderList.add(holder);
-            holder.boxitemLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    /**
-                     * 判断是否进入多选模式
-                     */
-                    if (ifItemSelected){
-                        /**
-                         * 对UI进行修改
-                         */
-                        if (holder.boxItemSelected.isChecked()){
-                            holder.boxItemSelected.setChecked(false);
-                            holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
-                        }else{
-                            holder.boxItemSelected.setChecked(true);
-                            holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
-                        }
-
-                        getItemNumber();
-                    }else{
-                        Intent intent = new Intent(getActivity(),BoxInfoActivity.class);
-                        intent.putExtra("extra_box",box);
-                        startActivity(intent);
-                    }
-
-                }
-            });
-
-
-            /**
-             * 长按键 可以进行删除操作
-             */
-            holder.boxitemLayout.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    if (!ifItemSelected){
-                        /**
-                         * 被长按的按钮默认选中
-                         */
-                        holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
-                        holder.boxItemSelected.setChecked(true);
-                        /**
-                         * 开启多选模式
-                         */
-                        displayItemSelected();
-
-
-                    }
-                    return true;
-                }
-            });
-
-
-            holder.boxItemSelected.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    /**
-                     * 对UI进行修改
-                     */
-                    if (holder.boxItemSelected.isChecked()){
-                        holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
-                    }else{
-                        holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
-                    }
-                    getItemNumber();
-                }
-            });
-            //数据加载
+            //数据加载  对纸箱姓名，备注的加载
             holder.boxNameText.setText(box.getbName());
             if (box.getbContent().equals("")){
                 holder.boxContentText.setText("(为空)");
@@ -383,8 +328,7 @@ public class ManagementFragment extends Fragment {
                 holder.boxContentText.setText(box.getbContent());
             }
 
-            holder.itemView.setTag(box.getId());
-
+            //显示各类价格
             BoxPriceAdapter boxPrizeAdapter = new BoxPriceAdapter(getBoxPrizeList(box.getbName()));
             if (getBoxPrizeList(box.getbName()).size() == 0){
                 holder.ifHavePrice.setVisibility(View.VISIBLE);
@@ -394,6 +338,47 @@ public class ManagementFragment extends Fragment {
             StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
             holder.boxPrizeRecyclerView.setLayoutManager(staggeredGridLayoutManager);
             holder.boxPrizeRecyclerView.setAdapter(boxPrizeAdapter);
+
+            //对UI的修改
+            if (ifItemSelected){    //判断是否进入多选模式
+                ifSelect(holder,position);
+            }else{
+                //如果不是多选模式则隐藏
+                holder.boxItemSelected.setVisibility(View.GONE);
+                holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
+            }
+
+            //对点击数据的监听（分进入多选模式或者正常模式）
+            holder.boxitemLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (!ifItemSelected) {   //判断是否进入多选模式
+                        //正常模式 进入详细页面
+                        Intent intent = new Intent(getActivity(), BoxInfoActivity.class);
+                        intent.putExtra("extra_box", box);
+                        startActivity(intent);
+                    }else {
+                        selectOrCancel(holder,position);
+                    }
+                }
+            });
+
+            /**
+             * 长按键 可以进行删除操作
+             */
+            holder.boxitemLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (!ifItemSelected){   //进入多选模式后就不用继续进行响应
+                        //被长按的按钮默认选中
+                       selectOrCancel(holder,position);
+                        // 开启多选模式
+                        ifDisplayItemSelected(true);
+                    }
+                    return true;
+                }
+            });
+
         }
 
         @Override
@@ -404,109 +389,128 @@ public class ManagementFragment extends Fragment {
         /**
          * 显示所有多选键
          */
-        public void displayItemSelected(){
+        public void ifDisplayItemSelected(boolean ifSelect){
+            //参数初始化
+            int select = View.VISIBLE;
+            int noSelect = View.GONE;
             //将多选模式参数修改为true
-            ifItemSelected = true;
-            //UI布局修改
-            toolbar.setVisibility(View.GONE);
-            bottomLayout.setVisibility(View.GONE);
-            sideBar.setVisibility(View.GONE);
-            itemSelectedTitle.setVisibility(View.VISIBLE);
-            deleteAllButton.setVisibility(View.VISIBLE);
+            ifItemSelected = ifSelect;
 
-
-            //展示整个列表的多选框
-            for (ViewHolder holder : holderList){
-                holder.boxItemSelected.setVisibility(View.VISIBLE);
+            //进行判断哪些控件应该被隐藏
+            if (!ifItemSelected){
+                select = View.GONE;
+                noSelect = View.VISIBLE;
+                //对数据进行清空
+                boxHashMap.clear();
+                mSelectedPositions.clear();
             }
+            //UI布局修改
+            toolbar.setVisibility(noSelect);       //标题
+            bottomLayout.setVisibility(noSelect);      //下方菜单
+            sideBar.setVisibility(noSelect);           //右边排序控件
+            itemSelectedTitle.setVisibility(select);        //选择标题栏
+            deleteAllButton.setVisibility(select);            //删除键
 
-            getItemNumber();
+            boxAdapter.notifyDataSetChanged();
         }
+
+
 
         /**
-         * 退出多选模式
+         * 显示数据的状态
+         * @param holder
+         * @param position
          */
-        public void quitItemSelected(){
-            //将多选模式参数修改为true
-            ifItemSelected = false;
-            //UI布局修改
-            toolbar.setVisibility(View.VISIBLE);
-            bottomLayout.setVisibility(View.VISIBLE);
-            sideBar.setVisibility(View.VISIBLE);
-            itemSelectedTitle.setVisibility(View.GONE);
-            deleteAllButton.setVisibility(View.GONE);
-
-
-            //隐藏整个列表的多选框
-            if (holderList != null){
-                for (ViewHolder holder : holderList){
-                    holder.boxItemSelected.setChecked(false);
-                    holder.boxItemSelected.setVisibility(View.GONE);
-                    holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
-                }
+        private void ifSelect(ViewHolder holder,int position){
+            updateBoxList();
+            //确定进入多选模式 显示选中项
+            holder.boxItemSelected.setVisibility(View.VISIBLE);
+            if(isItemChecked(position)){    //如果是选中的状态
+                holder.boxItemSelected.setChecked(true);
+                holder.boxitemLayout.setBackgroundResource(R.drawable.selected_layout);
+            }else{
+                holder.boxItemSelected.setChecked(false);
+                holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
             }
-
         }
+        /**
+         * 点击数据 进行选择或取消
+         */
+        private void selectOrCancel(ViewHolder holder,int position) {
+            boolean ifSelect = !isItemChecked(position);
+
+            setItemChecked(position, ifSelect);
+
+            getItemNumber();//统计数据
+
+            boxAdapter.notifyDataSetChanged();
+        }
+
+
+
 
         /**
          * 全选
          */
         public void selectAllItem(){
-            if (holderList != null){
-                for (ViewHolder holder : holderList){
-                    holder.boxItemSelected.setChecked(true);
-                    holder.boxitemLayout.setBackgroundColor(getResources().getColor(R.color.selected_color));
-                }
+            if (mSelectedPositions != null){
+                mSelectedPositions.clear();
             }
 
+            for (int i = 0; i < boxList.size(); i++){
+                setItemChecked(i,true);
+            }
+            boxAdapter.notifyDataSetChanged();
         }
 
         /**
          * 全不选
          */
         public void noSelectAllItem(){
-            if (holderList != null){
-                for (ViewHolder holder : holderList){
-                    holder.boxItemSelected.setChecked(false);
-                    holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
-                }
-            }
+            mSelectedPositions.clear();
+            boxAdapter.notifyDataSetChanged();
         }
 
         /**
          * 进行删除操作
          */
         public void deleteAllItem(){
-            int selectedNumber = 0;
-            if (holderList != null){
-                for (ViewHolder holder : holderList){
-                   if (holder.boxItemSelected.isChecked()){
-                       DataSupport.delete(Box.class,boxList.get(holder.getAdapterPosition()).getId());
-                       DataSupport.deleteAll(BoxPrice.class,"bName = ?",boxList.get(holder.getAdapterPosition()).getbName());
-                       selectedNumber ++;
-                   }
+            if (boxHashMap.size() != 0){
+                for (Map.Entry<Integer,Boolean> box : boxHashMap.entrySet()){
+                    if (box.getValue()){
+                        DataSupport.delete(Box.class,boxList.get(box.getKey()).getId());
+                        DataSupport.deleteAll(BoxPrice.class,"bName = ?",boxList.get(box.getKey()).getbName());
+                    }
                 }
-                if (selectedNumber != 0){
-                    Toast.makeText(getActivity(),"删除成功！",Toast.LENGTH_SHORT).show();
-                    quitItemSelected();
-                    getBoxList();
-                }
+                ManagementFragment.this.getBoxList();
+                boxAdapter.notifyDataSetChanged();
+                Toast.makeText(getActivity(),"删除成功！",Toast.LENGTH_SHORT).show();
+                ifDisplayItemSelected(false);//退出多选模式
             }
         }
 
         public void getItemNumber(){
-            int number = 0;
-            if (holderList != null){
-                for (ViewHolder holder : holderList){
-                    if (holder.boxItemSelected.isChecked()){
-                        number ++;
-                    }
+            List<Boolean> selectList = new ArrayList<>();
+            for (int i = 0; i < boxList.size(); i++){
+                if (isItemChecked(i)){
+                    selectList.add(mSelectedPositions.get(i));
                 }
             }
-            itemNumber.setText(number + "");
+            itemNumber.setText(selectList.size() + "");
         }
 
-    }
+        private void updateBoxList() {
+            if (boxHashMap != null) {
+                boxHashMap.clear();
+            } else {
+                boxHashMap = new HashMap<>();
+            }
+            for (int i = 0; i < boxList.size(); i++) {
+                boxHashMap.put(i, mSelectedPositions.get(i));
+            }
+        }
+            }
+
 
     class BoxPriceAdapter extends RecyclerView.Adapter<BoxPriceAdapter.ViewHolder>{
         List<BoxPrice> boxPriceList;
