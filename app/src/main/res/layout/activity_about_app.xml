@@ -1,9 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="me.xunself.bpstatistics.AboutAppActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolBar"
+        app:title="关于"
+        app:titleTextColor="@android:color/white"
+        android:background="@color/colorPrimaryDark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:navigationIcon="@drawable/ic_keyboard_arrow_left_white_24dp"></android.support.v7.widget.Toolbar>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BPStatistic"
+            android:textColor="@color/colorAccent"
+            android:textSize="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="版本：0.5.0测试版"
+            android:textColor="@color/colorAccent"
+            android:textSize="17dp"
+            android:layout_marginTop="10dp"/>
+        <TextView
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:lineSpacingExtra="8dp"
+            android:lineSpacingMultiplier="1.5"
+        android:text="  BPStatistics是基于Android移动平台开发的一款用于计算货物价格的统计app，通过给定货物的多种价格，最后选择价格来进行统计，并且让商家掌握市场规律"/>
+    </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+
+</LinearLayout>

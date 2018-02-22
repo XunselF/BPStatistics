@@ -2,13 +2,14 @@ package me.xunself.bpstatistics;
 
 import org.litepal.crud.DataSupport;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by XunselF on 2018/1/23.
  */
 
-public class BoxPrice extends DataSupport{
+public class BoxPrice extends DataSupport implements Serializable{
     private int id;
     private String bName;
     private String pName;

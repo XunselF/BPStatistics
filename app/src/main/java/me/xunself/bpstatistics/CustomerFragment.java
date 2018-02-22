@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +27,7 @@ import org.litepal.crud.DataSupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +43,14 @@ public class CustomerFragment extends Fragment {
     private RecyclerView customerRecyclerView;
 
     private CustomerAdapter customerAdapter;
+
+    //字母排序控件
+    private SideBar mSideBar;
+    //弹窗提示
+    private TextView textDialog;
+
+    //提示没有数据的页面
+    private RelativeLayout noDataLayout;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -75,30 +87,79 @@ public class CustomerFragment extends Fragment {
      * 初始化
      */
     private void initView(){
+        mSideBar = (SideBar) view.findViewById(R.id.sideBar);
+        textDialog = (TextView) view.findViewById(R.id.textDialog);
+        mSideBar.setTextView(textDialog);
+        mSideBar.setSideBar(mSideBar);
+        noDataLayout = (RelativeLayout) view.findViewById(R.id.nodata_layout);
         customerRecyclerView = (RecyclerView) view.findViewById(R.id.customer_recyclerview);
-        customerRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        customerRecyclerView.setLayoutManager(linearLayoutManager);
         customerAdapter = new CustomerAdapter();
         customerRecyclerView.setAdapter(customerAdapter);
+        mSideBar.setOnTouchLetterChangedListener(new SideBar.OnTouchLetterChangedListener() {
+            @Override
+            public void onTouchingLetterChanged(String s) {
+                int position = getPositionForSection(s.toUpperCase().charAt(0));
+                if(position != -1){
+                    //滚动到对应的数据
+                    linearLayoutManager.scrollToPositionWithOffset(position,0);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         getCustomerList();
+    }
+
+    /**
+     * 返回首次出现首字母的位置
+     * @param section
+     * @return
+     */
+    private int getPositionForSection(char section){
+        for (int i = 0; i < customerList.size(); i++){
+            String cName = customerList.get(i).getcLetter();    //获取首字母
+            char firstStr = cName.toUpperCase().charAt(0);
+            if (firstStr == section){
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
      * 获取数据
      */
     private void getCustomerList(){
-        customerList = new ArrayList<>();
-        List<Work> works = new ArrayList<>();
-        Work work = new Work();
-        work.setwTime(new Date());
-        work.setwPrice(1.22);
-        works.add(work);
-        for (int i = 0; i < 20; i++){
-            Customer customer = new Customer();
-            customer.setcName("曹客户");
-            customer.setWorkList(works);
-            customerList.add(customer);
+        customerList = DataSupport.findAll(Customer.class);
+        List<Work> works = DataSupport.findAll(Work.class);
+        List<CBox> cBoxes = DataSupport.findAll(CBox.class);
+        for (int i = 0; i < customerList.size(); i++){
+            Customer customer = customerList.get(i);
+            String cPinYin = PinyinUnils.getPinYin(customer.getcName());        //获取拼音
+            customer.setcPinYin(cPinYin);
+            String sortString = cPinYin.substring(0,1).toUpperCase();           //获取首字母
+            if(sortString.matches("[A-Z]")){
+                //判断是否是字母
+                customer.setcLetter(sortString);
+            }else{
+                customer.setcLetter("#");
+            }
         }
-        customerAdapter.notifyDataSetChanged();
+        //进行排序
+        Collections.sort(customerList);
+        if (customerList.size() == 0){
+            //当没有数据时，显示该页面
+            noDataLayout.setVisibility(View.VISIBLE);
+        }else{
+            //当有数据时，隐藏
+            noDataLayout.setVisibility(View.GONE);
+            customerAdapter.notifyDataSetChanged();
+        }
     }
 
     class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHolder>{
@@ -112,11 +173,43 @@ public class CustomerFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            Customer customer = customerList.get(position);
+        public void onBindViewHolder(final ViewHolder holder, int position) {
+            final Customer customer = customerList.get(position);
             holder.cNameText.setText(customer.getcName());
 
-            List<Work> works = customer.getWorkList();
+            holder.customerLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getActivity(),AboutCustomerActivity.class);
+                    intent.putExtra("extra_customer",customer);
+                    startActivity(intent);
+                }
+            });
+
+            holder.customerLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    PopupMenu popupMenu = new PopupMenu(getActivity(),holder.customerLayout);
+                    popupMenu.getMenuInflater().inflate(R.menu.customer_popupmenu,popupMenu.getMenu());
+                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch(item.getItemId()){
+                                case R.id.customer_delete:
+                                    customer.deleteCustomer();
+                                    getCustomerList();
+                                    Toast.makeText(getActivity(),"删除成功！",Toast.LENGTH_SHORT).show();
+                                    break;
+                            }
+                            return false;
+                        }
+                    });
+                    popupMenu.show();
+                    return false;
+                }
+            });
+
+            List<Work> works = DataSupport.where("cName = ?",customer.getcName()).find(Work.class);
 
             if (works.size() != 0){
                 Work work = works.get(works.size() - 1);
@@ -132,6 +225,7 @@ public class CustomerFragment extends Fragment {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder{
+            LinearLayout customerLayout;
             TextView cNameText;
             TextView oTimeText;
             TextView oPriceText;
@@ -140,6 +234,7 @@ public class CustomerFragment extends Fragment {
                 cNameText = (TextView) itemView.findViewById(R.id.customer_name);
                 oTimeText = (TextView) itemView.findViewById(R.id.order_time);
                 oPriceText = (TextView) itemView.findViewById(R.id.order_price);
+                customerLayout = (LinearLayout) itemView.findViewById(R.id.customer_layout);
             }
         }
     }

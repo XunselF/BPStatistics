@@ -1,5 +1,6 @@
 package me.xunself.bpstatistics;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**

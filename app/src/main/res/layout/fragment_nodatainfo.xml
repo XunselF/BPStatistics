@@ -10,8 +10,8 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true">
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_data_usage_black_48dp"/>
         <TextView
@@ -24,6 +24,7 @@
             android:textSize="20dp"
             android:textColor="@color/colorPrimary"/>
         <TextView
+            android:id="@+id/nodata_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"

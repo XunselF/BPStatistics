@@ -6,8 +6,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <include layout="@layout/itemselected_title"/>
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/select_box_recyclerview"
+    <include layout="@layout/fragment_nodatainfo" android:id="@+id/nodata_layout"/>
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/select_box_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
+        <RelativeLayout
+            android:id="@+id/select_box_layout"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/delete_layout"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="10dp">
+            <ImageView
+                android:src="@drawable/ic_playlist_add_check_white_48dp"
+                android:layout_centerInParent="true"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+        </RelativeLayout>
+    </RelativeLayout>
 </LinearLayout>

@@ -5,12 +5,14 @@
     <application
         android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/bps_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/bps_circle_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,7 +24,11 @@
         <activity android:name=".SettingPriceActivity" />
         <activity android:name=".BoxInfoActivity" />
         <activity android:name=".InquirePriceActivity" />
-        <activity android:name=".SelectBoxActivity"></activity>
+        <activity android:name=".SelectBoxActivity" />
+        <activity android:name=".AddCustomerActivity" />
+        <activity android:name=".SelectCustomerActivity" />
+        <activity android:name=".AboutCustomerActivity" />
+        <activity android:name=".AboutWorkActivity"></activity>
     </application>
 
 </manifest>

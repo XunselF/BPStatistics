@@ -430,7 +430,7 @@ public class ManagementFragment extends Fragment {
                 holder.boxitemLayout.setBackgroundResource(R.drawable.selected_layout);
             }else{
                 holder.boxItemSelected.setChecked(false);
-                holder.boxitemLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
+                holder.boxitemLayout.setBackgroundResource(R.drawable.box_item_background);
             }
         }
         /**
@@ -615,10 +615,13 @@ public class ManagementFragment extends Fragment {
                                     for (int j = 0; j < priceList.size(); j++){
                                         key = priceList.keyAt(j);   //获取索引
 
-                                        boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),1);
-
-                                        if (boxPrice.save()){
-                                            Log.d("price",DataSupport.findAll(Price.class).get(key).getPriceName() + " success");
+                                        try{
+                                            boxPrice = new BoxPrice(boxName,DataSupport.findAll(Price.class).get(key).getPriceName(),Double.valueOf(priceList.get(key)),new Date(),1);
+                                            if (boxPrice.save()){
+                                                Log.d("price",DataSupport.findAll(Price.class).get(key).getPriceName() + " success");
+                                            }
+                                        }catch (NumberFormatException e){
+                                            e.printStackTrace();
                                         }
                                     }
                                 }
