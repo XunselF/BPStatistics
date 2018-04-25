@@ -1,53 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
     <include android:id="@+id/itemselected_title"
         layout="@layout/itemselected_title" android:visibility="gone"/>
     <include android:id="@+id/nodatainfo_layout"
          layout="@layout/fragment_nodatainfo" android:visibility="gone"/>
-    <RelativeLayout
-        android:id="@+id/datainfo_layout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/box_recyclerview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
-        <TextView
-            android:id="@+id/textDialog"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:gravity="center"
-            android:layout_centerInParent="true"
-            android:text="A"
-            android:textSize="50dp"
-            android:textColor="#fff"
-            android:background="@drawable/textdialog"
-            android:visibility="invisible"/>
+        <RelativeLayout
+            android:id="@+id/datainfo_layout"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/box_recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
+            <TextView
+                android:id="@+id/textDialog"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:gravity="center"
+                android:layout_centerInParent="true"
+                android:text="A"
+                android:textSize="50dp"
+                android:textColor="#fff"
+                android:background="@drawable/textdialog"
+                android:visibility="invisible"/>
+
+            <RelativeLayout
+                android:id="@+id/delete_all_layout"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/delete_layout"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="10dp"
+                android:visibility="gone">
+                <ImageView
+                    android:src="@drawable/ic_delete_sweep_white_48dp"
+                    android:layout_centerInParent="true"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"/>
+            </RelativeLayout>
+        </RelativeLayout>
         <me.xunself.bpstatistics.SideBar
             android:id="@+id/sideBar"
-            android:layout_width="20dp"
+            android:layout_width="15dp"
             android:layout_height="match_parent"
             android:background="@drawable/sidebar"
-            android:layout_alignParentRight="true"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="6dp"/>
-        <RelativeLayout
-            android:id="@+id/delete_all_layout"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/delete_layout"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="10dp"
-            android:visibility="gone">
-            <ImageView
-                android:src="@drawable/ic_delete_sweep_white_48dp"
-                android:layout_centerInParent="true"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-        </RelativeLayout>
-    </RelativeLayout>
+            android:layout_alignParentRight="true"/>
+    </LinearLayout>
+
 
 </LinearLayout>

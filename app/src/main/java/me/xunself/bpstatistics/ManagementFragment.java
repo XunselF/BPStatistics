@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,7 +13,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
@@ -27,21 +25,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import net.sourceforge.pinyin4j.PinyinHelper;
-
 import org.litepal.crud.DataSupport;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -232,7 +225,7 @@ public class ManagementFragment extends Fragment {
     /**
      * 获取数据
      */
-    private List<BoxPrice> getBoxPrizeList(String boxName){
+    private List<BoxPrice> getBoxPriceList(String boxName){
         List<BoxPrice> boxPriceList = new ArrayList<>();
         List<Price> prices = DataSupport.findAll(Price.class);
         for (Price price : prices){
@@ -297,7 +290,7 @@ public class ManagementFragment extends Fragment {
             TextView boxNameText;
             TextView boxContentText;
             TextView ifHavePrice;
-            RecyclerView boxPrizeRecyclerView;
+            RecyclerView boxPriceRecyclerView;
             CheckBox boxItemSelected;
             public ViewHolder(View itemView) {
                 super(itemView);
@@ -305,7 +298,7 @@ public class ManagementFragment extends Fragment {
                 boxNameText = (TextView) itemView.findViewById(R.id.box_name);
                 boxContentText = (TextView) itemView.findViewById(R.id.box_content);
                 ifHavePrice = (TextView) itemView.findViewById(R.id.ifHavePrice);
-                boxPrizeRecyclerView = (RecyclerView) itemView.findViewById(R.id.box_prize_recyclerview);
+                boxPriceRecyclerView = (RecyclerView) itemView.findViewById(R.id.box_price_recyclerview);
                 boxItemSelected = (CheckBox) itemView.findViewById(R.id.box_selected);
             }
         }
@@ -329,15 +322,15 @@ public class ManagementFragment extends Fragment {
             }
 
             //显示各类价格
-            BoxPriceAdapter boxPrizeAdapter = new BoxPriceAdapter(getBoxPrizeList(box.getbName()));
-            if (getBoxPrizeList(box.getbName()).size() == 0){
+            BoxPriceAdapter boxPriceAdapter = new BoxPriceAdapter(getBoxPriceList(box.getbName()));
+            if (getBoxPriceList(box.getbName()).size() == 0){
                 holder.ifHavePrice.setVisibility(View.VISIBLE);
             }else{
                 holder.ifHavePrice.setVisibility(View.GONE);
             }
-            StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
-            holder.boxPrizeRecyclerView.setLayoutManager(staggeredGridLayoutManager);
-            holder.boxPrizeRecyclerView.setAdapter(boxPrizeAdapter);
+            StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
+            holder.boxPriceRecyclerView.setLayoutManager(staggeredGridLayoutManager);
+            holder.boxPriceRecyclerView.setAdapter(boxPriceAdapter);
 
             //对UI的修改
             if (ifItemSelected){    //判断是否进入多选模式
@@ -358,7 +351,7 @@ public class ManagementFragment extends Fragment {
                         intent.putExtra("extra_box", box);
                         startActivity(intent);
                     }else {
-                        selectOrCancel(holder,position);
+                        selectOrCancel(position);
                     }
                 }
             });
@@ -371,7 +364,7 @@ public class ManagementFragment extends Fragment {
                 public boolean onLongClick(View view) {
                     if (!ifItemSelected){   //进入多选模式后就不用继续进行响应
                         //被长按的按钮默认选中
-                       selectOrCancel(holder,position);
+                       selectOrCancel(position);
                         // 开启多选模式
                         ifDisplayItemSelected(true);
                     }
@@ -387,7 +380,7 @@ public class ManagementFragment extends Fragment {
         }
 
         /**
-         * 显示所有多选键
+         * 进入多选模式进行删除
          */
         public void ifDisplayItemSelected(boolean ifSelect){
             //参数初始化
@@ -436,7 +429,7 @@ public class ManagementFragment extends Fragment {
         /**
          * 点击数据 进行选择或取消
          */
-        private void selectOrCancel(ViewHolder holder,int position) {
+        public void selectOrCancel(int position) {
             boolean ifSelect = !isItemChecked(position);
 
             setItemChecked(position, ifSelect);
@@ -515,10 +508,13 @@ public class ManagementFragment extends Fragment {
     class BoxPriceAdapter extends RecyclerView.Adapter<BoxPriceAdapter.ViewHolder>{
         List<BoxPrice> boxPriceList;
         class ViewHolder extends RecyclerView.ViewHolder{
+
+            CardView boxPriceLayout;
             TextView boxPriceText;
             TextView bPNameText;
             public ViewHolder(View itemView) {
                 super(itemView);
+                boxPriceLayout = (CardView) itemView.findViewById(R.id.cardview_boxPrice_layout);
                 boxPriceText = (TextView) itemView.findViewById(R.id.box_price);
                 bPNameText = (TextView) itemView.findViewById(R.id.box_price_name);
             }
@@ -529,16 +525,54 @@ public class ManagementFragment extends Fragment {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(getActivity()).inflate(R.layout.boxprize_item,parent,false);
+            View view = LayoutInflater.from(getActivity()).inflate(R.layout.boxprice_item,parent,false);
             ViewHolder holder = new ViewHolder(view);
             return holder;
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(ViewHolder holder, final int position) {
             BoxPrice boxPrice = boxPriceList.get(position);
             holder.bPNameText.setText(boxPrice.getpName());
             holder.boxPriceText.setText(boxPrice.getbPrice() + "");
+
+
+
+            //点击模式 -- 进入该商品资料 或 在多选模式下选择
+            holder.boxPriceLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(ifItemSelected){
+                        //多选模式下
+
+                    }else{
+                        //普通点击模式下
+
+                    }
+                }
+            });
+
+            //长按事件  -- 进入多选模式
+            holder.boxPriceLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if(!ifItemSelected){            //判断是否进入多选模式
+                        multipleSelect(position);
+                    }
+                    return true;
+                }
+            });
+        }
+
+
+        /**
+         * 进入多选模式
+         */
+        public void multipleSelect(int position){
+            //进入多选模式
+            boxAdapter.selectOrCancel(position);
+            boxAdapter.ifDisplayItemSelected(true);
+            boxAdapter.notifyDataSetChanged();
         }
 
         @Override
@@ -569,8 +603,8 @@ public class ManagementFragment extends Fragment {
             }
         });
         inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        final RecyclerView boxPriceRecyclerView = (RecyclerView) view.findViewById(R.id.box_prize_recyclerview);
-        boxPriceRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final RecyclerView boxPriceRecyclerView = (RecyclerView) view.findViewById(R.id.dialog_box_price_recyclerview);
+        boxPriceRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         final PriceAdapter priceAdapter = new PriceAdapter(DataSupport.findAll(Price.class));
         boxPriceRecyclerView.setAdapter(priceAdapter);
 

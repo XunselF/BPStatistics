@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp">
                 <android.support.v7.widget.RecyclerView
-                    android:id="@+id/box_prize_recyclerview"
+                    android:id="@+id/dialog_box_price_recyclerview"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
             </RelativeLayout>
